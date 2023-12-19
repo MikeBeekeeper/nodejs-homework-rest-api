@@ -1,5 +1,11 @@
 const app = require('./app')
+const setupMongoConnection = require('./helpers/setupMongoConection')
 
-app.listen(3001, () => {
-  console.log("Server running. Use our API on port: 3001")
-})
+setupMongoConnection()
+  .then(() => app.listen(3000, async () => {
+    console.log("Server running. Use our API on port: 3000")
+  }))
+  .catch(error => {
+    console.log(error.message);
+    process.exit(1)
+  })
