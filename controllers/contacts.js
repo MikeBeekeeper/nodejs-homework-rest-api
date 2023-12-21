@@ -36,7 +36,6 @@ const addContact = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-  res.json({ message: "template message" });
 };
 
 const deleteContact = async (req, res, next) => {
