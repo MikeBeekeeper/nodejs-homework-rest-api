@@ -73,7 +73,7 @@ const updateFavoritefield = async (req, res, next) => {
   try {
     const { error } = updateFavoriteSchema.validate(req.body);
     if (error) {
-      throw HttpError(400, error.message);
+      throw HttpError(400, "missing field favorite");
     }
     const { id } = req.params;
     const result = await Book.findByIdAndUpdate(id, req.body, { new: true });
