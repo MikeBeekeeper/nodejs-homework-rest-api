@@ -8,6 +8,7 @@ const {
     DB_MONGO_PASSWORD,
     DB_MONGO_DATABASE,
     DB_MONGO_PORT,
+    SECRET_KEY
 } = process.env
 
 if (!DB_MONGO_HOST) {
@@ -46,4 +47,5 @@ module.exports = {
     DB_MONGO_PASSWORD,
     DB_MONGO_DATABASE,
     DB_MONGO_PORT,
+    SECRET_KEY,
 }

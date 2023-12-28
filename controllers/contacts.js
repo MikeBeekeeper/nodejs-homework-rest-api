@@ -1,10 +1,14 @@
 const Book = require("../models/contact");
 const { schemas } = require("../helpers");
 const { addSchema, updateFavoriteSchema } = schemas;
+const {HttpError} = require("../helpers")
 
 const getAllContacts = async (req, res, next) => {
   try {
-    const result = await Book.find();
+    const { _id: owner } = req.user
+    const { page = 1, limit = 10 } = req.query
+    const skip = (page - 1) * 10
+    const result = await Book.find({owner}, {skip, limit});
     res.json(result);
   } catch (error) {
     next(error);
@@ -31,7 +35,8 @@ const addContact = async (req, res, next) => {
     if (error) {
       throw HttpError(400, "missing required name field");
     }
-    const result = await Book.create(req.body);
+    const { _id: owner } = req.user;
+    const result = await Book.create({...req.body, owner});
     res.status(201).json(result);
   } catch (error) {
     next(error);
