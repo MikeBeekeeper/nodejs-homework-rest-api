@@ -4,7 +4,6 @@ const { HttpError, ctrlWrapper } = require("../helpers");
 const { User } = require("../models/user")
 const {SECRET_KEY} = require("../constants/env")
 
-
 const register = async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
@@ -17,10 +16,11 @@ const register = async (req, res) => {
 
     const newUser = await User.create({...req.body, password: hashPassword});
 
-
     res.status(201).json({
-        email: newUser.email,
-        name: newUser.name,       
+        user: {
+            email: newUser.email,
+            subscription: newUser.subscription,
+        }
     })
 }
 
@@ -45,7 +45,13 @@ const login = async (req, res) => {
     const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "23h" })
     await User.findByIdAndUpdate(user._id, {token})
     
-    res.json({token})
+    res.json({
+        token,
+        user: {
+            email: user.email,
+            subscription: user.subscription,
+        }
+    })
 }
 
 const getCurrent = async (req, res) => {

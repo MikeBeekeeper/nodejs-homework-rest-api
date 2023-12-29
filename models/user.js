@@ -23,27 +23,11 @@ const userSchema = new Schema({
     type: String,
     default: null,
   },
-    // name: {
-    //     type: String,
-    //     required: true,
-    // },
-    // email: {
-    //     type: String,
-    //     match: emailRegexp,
-    //     unique: true,
-    //     required: true,
-    // },
-    // password: {
-    //     type: String,
-    //     minlength: 6,
-    //     required: true,
-    // }
 }, { versionKey: false, timestamps: true })
 
 userSchema.post("save", handleMongooseError);
 
 const registerUserschema = Joi.object({
-    name: Joi.string().required(),
     email: Joi.string().required(),
     password: Joi.string().min(6).required()
 });
