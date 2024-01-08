@@ -1,12 +1,15 @@
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
-const { HttpError, ctrlWrapper } = require("../helpers");
+const { HttpError, ctrlWrapper, transport } = require("../helpers");
 const { User } = require("../models/user")
 const { SECRET_KEY } = require("../constants/env")
 const gravatar = require("gravatar")
 const path = require("path")
 const fs = require("fs/promises")
 const Jimp = require("jimp")
+const nanoid = require("nanoid");
+const { sendVerifyLink } = require("../middlewares");
+const { SMTP_USER } = require("../constants/env")
 
 const avatarsDir = path.join(__dirname,"../", "public", "avatars")
 
@@ -21,10 +24,12 @@ const register = async (req, res) => {
 
     const hashPassword = await bcrypt.hash(password, 10)
     const avatarURL = gravatar.url(email)
+    const verificationToken = nanoid()
 
-    const newUser = await User.create({ ...req.body, password: hashPassword, avatarURL });
-    console.log(newUser)
+    const newUser = await User.create({ ...req.body, password: hashPassword, avatarURL, verificationToken });
 
+    sendVerifyLink(email)
+    
     res.status(201).json({
         user: {
             email: newUser.email,
@@ -39,6 +44,10 @@ const login = async (req, res) => {
 
     if (!user) {
         throw HttpError(401, "Email or password is wrong")
+    }
+
+    if (!user.verify) {
+        throw HttpError(401, "Not verified")
     }
 
     const passwordCompare = await bcrypt.compare(password, user.password)
@@ -105,10 +114,54 @@ const updateAvatar = async (req, res) => {
 
 }
 
+const examByVerificationToken = async (req, res) => {
+    const { verificationToken } = req.params
+
+    const user = await User.findOne().where('verificationToken').equals(verificationToken)
+    if (!user) {
+        throw HttpError(404, "Not found")
+    }
+
+    if (user.verify) {
+        throw HttpError(400, "Verification has already been passed")
+    }
+
+    const { _id } = user
+    await User.findByIdAndUpdate(_id, {verify: true})
+    
+    res.json({
+        message: 'Verification successful',
+    })
+}
+
+const reapeatingExam = async (req, res) => {
+
+    const { email } = req.body
+    if (!email) {
+        throw HttpError(400, "missing required field email")
+    }
+
+    const user = await User.findOne().where('email').equals(email)
+    if (!user) {
+        throw HttpError(404, "Not found")
+    }
+
+    const {_id, verify } = user
+
+    if (verify) {
+        throw HttpError (400, "Verification has already been passed")    
+    }
+
+    sendVerifyLink(email)
+
+}
+
 module.exports = {
     register: ctrlWrapper(register),
     login: ctrlWrapper(login),
     getCurrent: ctrlWrapper(getCurrent),
     logout: ctrlWrapper(logout),
     updateAvatar: ctrlWrapper(updateAvatar),
+    examByVerificationToken: ctrlWrapper(examByVerificationToken),
+    reapeatingExam: ctrlWrapper(reapeatingExam),
 }

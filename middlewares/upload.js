@@ -1,6 +1,5 @@
 const multer = require("multer");
 const path = require("path");
-// const gravatar = require("gravatar")
 
 const tempDir = path.join(__dirname, "../", "temp")
 
