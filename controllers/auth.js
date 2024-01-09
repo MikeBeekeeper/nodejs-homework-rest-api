@@ -2,14 +2,13 @@ const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const { HttpError, ctrlWrapper, transport } = require("../helpers");
 const { User } = require("../models/user")
-const { SECRET_KEY } = require("../constants/env")
+const { SECRET_KEY, SMTP_USER} = require("../constants/env")
 const gravatar = require("gravatar")
 const path = require("path")
 const fs = require("fs/promises")
 const Jimp = require("jimp")
 const nanoid = require("nanoid");
 const { sendVerifyLink } = require("../middlewares");
-const { SMTP_USER } = require("../constants/env")
 
 const avatarsDir = path.join(__dirname,"../", "public", "avatars")
 
@@ -28,7 +27,7 @@ const register = async (req, res) => {
 
     const newUser = await User.create({ ...req.body, password: hashPassword, avatarURL, verificationToken });
 
-    sendVerifyLink(email)
+    await sendVerifyLink(email)
     
     res.status(201).json({
         user: {
@@ -127,7 +126,7 @@ const examByVerificationToken = async (req, res) => {
     }
 
     const { _id } = user
-    await User.findByIdAndUpdate(_id, {verify: true})
+    await User.findByIdAndUpdate(_id, {verify: true, verificationToken: ""})
     
     res.json({
         message: 'Verification successful',
@@ -152,7 +151,11 @@ const reapeatingExam = async (req, res) => {
         throw HttpError (400, "Verification has already been passed")    
     }
 
-    sendVerifyLink(email)
+    await sendVerifyLink(email)
+
+    res.json({
+        message: "Verification link is sended on your email"
+    })
 
 }
 

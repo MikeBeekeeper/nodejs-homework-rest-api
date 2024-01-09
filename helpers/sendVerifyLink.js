@@ -1,4 +1,4 @@
-const { SMTP_USER } = require("../constants/env")
+const { SMTP_USER, WEB_HOST } = require("../constants/env")
 const { transport } = require(".")
 const fs = require("node:fs/promises")
 const path = require("node:path")
@@ -13,7 +13,7 @@ const sendVerifyLink = async (email) => {
         const file = (await fs.readFile(path.join(__dirname, "verificationEmailLetter.html"))).toString()
         const template = Handlebars.compile(file)
         const html = template({
-            verificationLink: `http://localhost:3000/users/verify/${verificationToken}`,
+            verificationLink: `${WEB_HOST}/users/verify/${verificationToken}`,
         })
 
          transport.sendMail({

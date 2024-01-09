@@ -13,6 +13,7 @@ const {
     SMTP_PORT,
     SMTP_USER,
     SMTP_PASSWORD,
+    WEB_HOST,
 } = process.env
 
 if (!DB_MONGO_HOST) {
@@ -60,6 +61,11 @@ if (!SMTP_PASSWORD) {
     process.exit(1)
 }
 
+if (!WEB_HOST) {
+    console.log('WEB_HOST is not set')
+    process.exit(1)
+}
+
 module.exports = {
     DB_MONGO_HOST,
     DB_MONGO_USER,
@@ -71,4 +77,5 @@ module.exports = {
     SMTP_PORT,
     SMTP_USER,
     SMTP_PASSWORD,
+    WEB_HOST,
 }
